@@ -10,6 +10,7 @@ export default function TicketView({route, navigation}) {
     const [isSuccess, setSuccess] = useState(null);
     const [showDialog, setShowDialog] = useState(false);
     const [dialogMessage, setDialogMessage] = useState('');
+    const [loading, setLoading] = useState(false);
     const auth = useContext(AuthContext);
 
     const handleDialogCloseAfterSuccess = () => {
@@ -22,6 +23,7 @@ export default function TicketView({route, navigation}) {
     }
 
     const handleSubmit = () => {
+        setLoading(true);
         fetch(BASE_URL + "/api/ticket", {
             method: 'PATCH',
             headers: {
@@ -30,6 +32,7 @@ export default function TicketView({route, navigation}) {
             },
             body: route.params
         }).then(res => {
+            setLoading(false);
             if(res.ok)
                 return res.json()
             else throw new Error(res.status)
@@ -137,12 +140,16 @@ export default function TicketView({route, navigation}) {
                 <View style={styles.gutterBottom}>
                     <Button mode="contained" contentStyle={styles.buttonContent}
                             color="#1976d2" style={styles.smallGutterBottom}
-                            onPress={handleSubmit}>
+                            onPress={handleSubmit}
+                            loading={loading}
+                    >
                         Sprawdziłem dane i zatwierdzam bilet
                     </Button>
                     <Button mode="contained" contentStyle={styles.buttonContent}
                             color="#7b1fa2" style={styles.smallGutterBottom}
-                            onPress={() => navigation.navigate('Home')}>
+                            onPress={() => navigation.navigate('Home')}
+                            disabled={loading}
+                    >
                         Powrót do menu
                     </Button>
                 </View>

@@ -8,6 +8,7 @@ export default function LoginView({navigation}) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorText, setErrorText] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const auth = useContext(AuthContext);
 
@@ -19,19 +20,24 @@ export default function LoginView({navigation}) {
         }, [])
     )
 
-    const handleSubmit = () => auth.login(username, password).then(success => {
-        if(success) {
-            setErrorText('');
-            navigation.navigate('Home');
-        } else
-            setErrorText('Podano zły login lub hasło');
+    const handleSubmit = () => {
+        setLoading(true);
+        auth.login(username, password).then(success => {
+            setLoading(false);
+            if(success) {
+                setErrorText('');
+                navigation.navigate('Home');
+            } else
+                setErrorText('Podano zły login lub hasło');
 
-    }).catch(e => {
-        if(e.name === 'WRONG_ROLE_EXCEPTION')
-            setErrorText("Konto nie posiada uprawnień do korzystania z aplikacji");
-        else
-            setErrorText("Coś poszło nie tak. Spróbuj ponownie później");
-    })
+        }).catch(e => {
+            setLoading(false);
+            if(e.name === 'WRONG_ROLE_EXCEPTION')
+                setErrorText("Konto nie posiada uprawnień do korzystania z aplikacji");
+            else
+                setErrorText("Coś poszło nie tak. Spróbuj ponownie później");
+        })
+    }
 
     return (
         <View style={styles.container}>
@@ -48,6 +54,7 @@ export default function LoginView({navigation}) {
                            onChangeText={value => setUsername(value)}
                            value={username}
                            activeOutlineColor="#1976d2"
+                           disabled={loading}
                 />
             </View>
             <View style={styles.textInput}>
@@ -56,12 +63,14 @@ export default function LoginView({navigation}) {
                            value={password}
                            secureTextEntry={true}
                            activeOutlineColor="#1976d2"
+                           disabled={loading}
                 />
             </View>
             <View style={styles.submitButton}>
                 <Button mode="contained"
                         onPress={handleSubmit}
                         color="#1976d2" contentStyle={styles.submitButtonContent}
+                        loading={loading}
                 >
                     Zaloguj
                 </Button>
